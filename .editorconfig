@@ -4,7 +4,10 @@ root = true
 charset = utf-8
 
 [*.{groovy,java,kt,kts,xml,xsd}]
-indent_style = tab
+charset = utf-8
+end_of_line = lf
+indent_style = space
 indent_size = 4
 continuation_indent_size = 8
-end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
