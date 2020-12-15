@@ -382,12 +382,14 @@ public abstract class DataSourceUtils {
 		}
 		if (dataSource != null) {
 			ConnectionHolder conHolder = (ConnectionHolder) TransactionSynchronizationManager.getResource(dataSource);
+			// 当前事务管理中保存 ConnectionHolder 的连接和要释放的连接时同一个
 			if (conHolder != null && connectionEquals(conHolder, con)) {
 				// It's the transactional Connection: Don't close it.
 				conHolder.released();
 				return;
 			}
 		}
+		// 为单独的 JDBC 连接，直接关闭 close
 		doCloseConnection(con, dataSource);
 	}
 

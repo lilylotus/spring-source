@@ -136,7 +136,9 @@ public abstract class TransactionSynchronizationManager {
 	 */
 	@Nullable
 	public static Object getResource(Object key) {
+	    // 获取最原始的 DataSource, 防止使用代理和封装
 		Object actualKey = TransactionSynchronizationUtils.unwrapResourceIfNecessary(key);
+		// 获取当前线程 DataSource 对应的事务管理对象， 目前看到的是 ConnectionHolder 接口实现类
 		Object value = doGetResource(actualKey);
 		if (value != null && logger.isTraceEnabled()) {
 			logger.trace("Retrieved value [" + value + "] for key [" + actualKey + "] bound to thread [" +

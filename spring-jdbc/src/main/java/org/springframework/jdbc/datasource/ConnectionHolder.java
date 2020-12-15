@@ -196,9 +196,13 @@ public class ConnectionHolder extends ResourceHolderSupport {
 	 */
 	@Override
 	public void released() {
+	    // ResourceHolderSupport.referenceCount-- , 归为正常值 0
 		super.released();
+		// referenceCount > 0 ? = 0 没有连接在使用
 		if (!isOpen() && this.currentConnection != null) {
+		    // 并没有使用 Connection.close
 			if (this.connectionHandle != null) {
+			    // new SimpleConnectionHandle(connection);
 				this.connectionHandle.releaseConnection(this.currentConnection);
 			}
 			this.currentConnection = null;
