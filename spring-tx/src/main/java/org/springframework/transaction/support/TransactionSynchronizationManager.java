@@ -1,5 +1,5 @@
 /*
- * Copyright 2002-2019 the original author or authors.
+ * Copyright 2002-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,9 +136,9 @@ public abstract class TransactionSynchronizationManager {
 	 */
 	@Nullable
 	public static Object getResource(Object key) {
-	    // 获取最原始的 DataSource, 防止使用代理和封装
+        // 获取最原始的 DataSource, 防止使用代理和封装
 		Object actualKey = TransactionSynchronizationUtils.unwrapResourceIfNecessary(key);
-		// 获取当前线程 DataSource 对应的事务管理对象， 目前看到的是 ConnectionHolder 接口实现类
+        // 获取当前线程 DataSource 对应的事务管理对象， 目前看到的是 ConnectionHolder 接口实现类
 		Object value = doGetResource(actualKey);
 		if (value != null && logger.isTraceEnabled()) {
 			logger.trace("Retrieved value [" + value + "] for key [" + actualKey + "] bound to thread [" +
@@ -385,7 +385,7 @@ public abstract class TransactionSynchronizationManager {
 	 * as argument for the {@code beforeCommit} callback, to be able
 	 * to suppress change detection on commit. The present method is meant
 	 * to be used for earlier read-only checks, for example to set the
-	 * flush mode of a Hibernate Session to "FlushMode.NEVER" upfront.
+	 * flush mode of a Hibernate Session to "FlushMode.MANUAL" upfront.
 	 * @see org.springframework.transaction.TransactionDefinition#isReadOnly()
 	 * @see TransactionSynchronization#beforeCommit(boolean)
 	 */

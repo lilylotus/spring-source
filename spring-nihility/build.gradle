@@ -8,6 +8,9 @@ version '5.2.6.RELEASE'
 sourceCompatibility = 1.8
 
 repositories {
+    maven { url 'https://maven.aliyun.com/repository/public' }
+	maven { url 'https://maven.aliyun.com/repository/spring' }
+	maven { url 'https://maven.aliyun.com/repository/spring-plugin' }
     mavenCentral()
 }
 
@@ -23,7 +26,7 @@ dependencies {
 
     implementation('org.apache.logging.log4j:log4j-core')
     implementation('org.apache.logging.log4j:log4j-slf4j-impl')
-    implementation('org.hsqldb:hsqldb:2.5.0')
+    implementation('org.hsqldb:hsqldb')
 }
 
 test {
