@@ -344,7 +344,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 		// Use defaults if no transaction definition given.
 		TransactionDefinition def = (definition != null ? definition : TransactionDefinition.withDefaults());
 
-		// 获取当前事务状态的事务对象
+		// 获取当前事务状态的事务对象，具体的子类来实现
         // transaction = DataSourceTransactionManager#DataSourceTransactionObject
 		Object transaction = doGetTransaction();
 		boolean debugEnabled = logger.isDebugEnabled();
@@ -412,7 +412,7 @@ public abstract class AbstractPlatformTransactionManager implements PlatformTran
 		DefaultTransactionStatus status = newTransactionStatus(
 				definition, transaction, true, newSynchronization, debugEnabled, suspendedResources);
 		/* 按照事务定义配置 Connection 的事务隔离级别/传播行为/超时 ...
-		* 绑定事务和 DataSource
+		* 绑定事务和 DataSource，模板，具体的事务管理子类实现
 		* */
 		doBegin(transaction, definition);
 		// status.newSynchronization = true

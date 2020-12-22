@@ -111,3 +111,44 @@ AbstractPlatformTransactionManager.startTransaction()
     
 重要方法
 * TransactionSynchronizationManager.getResource(key) 
+
+# spring `EnableTransactionManagement` 注解，自动 tx 配置
+
+该注解引入 `@Import(TransactionManagementConfigurationSelector.class)` 配置类
+
+* 默认注解 `mode` 为 `AdviceMode.PROXY` (JDK 动态代理方式实现)。
+    会在 spring 容器中加载 `AutoProxyRegistrar` 和 `ProxyTransactionManagementConfiguration` 配置类
+* 注解 `mode` 为 `AdviceMode.ASPECTJ` (AspectJ weaving-based advice. 动态代理方式实现)。
+    依据 `javax.transaction.Transactional` 该类是否存在，选择加载
+    `TransactionManagementConfigUtils.JTA_TRANSACTION_ASPECT_CONFIGURATION_CLASS_NAME` 或
+    `TransactionManagementConfigUtils.TRANSACTION_ASPECT_CONFIGURATION_CLASS_NAME)`
+    
+## ProxyTransactionManagementConfiguration 代理事务管理配置类
+
+会在 spring IOC 容器中加载
+
+* `BeanFactoryTransactionAttributeSourceAdvisor`
+    Spring tx 的 AOP PointcutAdvisor Bean 工厂，注入了
+    `AnnotationTransactionAttributeSource` 和 `TransactionInterceptor`
+* `AnnotationTransactionAttributeSource`
+    内部加载 `SpringTransactionAnnotationParser` 解析 `Transactional.class` 注解
+* `TransactionInterceptor` 继承 `TransactionAspectSupport` (重)
+    tx 事务方法的拦截器， `PlatformTransactionManager` 有关
+    
+### 事务调用逻辑
+
+ReflectiveMethodInvocation.proceed()
+-> ((MethodInterceptor) interceptorOrInterceptionAdvice).invoke(this);
+TransactionInterceptor.invoke(MethodInvocation)
+-> TransactionAspectSupport.invokeWithinTransaction()
+   -> TransactionAspectSupport.createTransactionIfNecessary()
+      -> AbstractPlatformTransactionManager.getTransaction() - [PlatformTransactionManager.getTransaction()]
+-> (MethodInvocation)invocation.proceedWithInvocation()
+
+### 回滚
+
+TransactionAspectSupport.completeTransactionAfterThrowing()
+-> AbstractPlatformTransactionManager.rollback()
+   -> AbstractPlatformTransactionManager.cleanupAfterCompletion()
+   -> AbstractPlatformTransactionManager.resume() [恢复上个事务]
+   -> AbstractPlatformTransactionManager.processRollback [处理事务回滚]

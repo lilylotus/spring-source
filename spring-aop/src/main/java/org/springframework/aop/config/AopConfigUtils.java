@@ -132,6 +132,11 @@ public abstract class AopConfigUtils {
 			return null;
 		}
 
+		/*
+		* 注册： InfrastructureAdvisorAutoProxyCreator
+		* AspectJAwareAdvisorAutoProxyCreator
+		* AnnotationAwareAspectJAutoProxyCreator
+		* */
 		RootBeanDefinition beanDefinition = new RootBeanDefinition(cls);
 		beanDefinition.setSource(source);
 		beanDefinition.getPropertyValues().add("order", Ordered.HIGHEST_PRECEDENCE);

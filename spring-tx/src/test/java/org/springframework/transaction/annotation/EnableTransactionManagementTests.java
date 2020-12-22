@@ -241,15 +241,18 @@ public class EnableTransactionManagementTests {
 
 		@Transactional(readOnly = true)
 		public Collection<?> findAllFoos() {
+            System.out.println("findAllFoos");
 			return null;
 		}
 
 		@Transactional("qualifiedTransactionManager")
 		public void saveQualifiedFoo() {
+            System.out.println("saveQualifiedFoo");
 		}
 
 		@Transactional(transactionManager = "qualifiedTransactionManager")
 		public void saveQualifiedFooWithAttributeAlias() {
+            System.out.println("saveQualifiedFooWithAttributeAlias");
 		}
 	}
 
