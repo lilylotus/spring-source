@@ -16,9 +16,7 @@
 
 package org.springframework.transaction.testfixture;
 
-import org.springframework.transaction.SavepointManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 import org.springframework.transaction.support.DefaultTransactionStatus;
 
@@ -29,100 +27,38 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
 @SuppressWarnings("serial")
 public class CallCountingTransactionManager extends AbstractPlatformTransactionManager {
 
-	public TransactionDefinition lastDefinition;
-	public int begun;
-	public int commits;
-	public int rollbacks;
-	public int inflight;
-
-	public TX tx;
-
+    public TransactionDefinition lastDefinition;
+    public int begun;
+    public int commits;
+    public int rollbacks;
+    public int inflight;
 
     @Override
-	protected Object doGetTransaction() {
-	    if (tx == null) {
-            tx = new TX(false);
-        }
-        System.out.println("doGetTransaction [" + tx.hashCode() + "]");
-		return tx;
-	}
-
-	@Override
-	protected void doBegin(Object transaction, TransactionDefinition definition) {
-        System.out.println("doBegin transaction [" + transaction.hashCode() + "] definition[" + definition.hashCode() + "] tx [" + tx.hashCode() + "]");
-		this.lastDefinition = definition;
-		++begun;
-		++inflight;
-
-		tx.hasTx = true;
-	}
-
-	@Override
-	protected void doCommit(DefaultTransactionStatus status) {
-        System.out.println("doCommit status [" + status.hashCode() + "] tx [" + tx.hashCode() + "]");
-		++commits;
-		--inflight;
-	}
-
-    @Override
-    protected boolean isExistingTransaction(Object transaction) throws TransactionException {
-        return ((TX) transaction).hasTx;
+    protected Object doGetTransaction() {
+        return new Object();
     }
 
     @Override
-	protected void doRollback(DefaultTransactionStatus status) {
-        System.out.println("doRollback status [" + status.hashCode() + "] tx [" + tx.hashCode() + "]");
-		++rollbacks;
-		--inflight;
-	}
-
-	public void clear() {
-		begun = commits = rollbacks = inflight = 0;
-	}
+    protected void doBegin(Object transaction, TransactionDefinition definition) {
+        this.lastDefinition = definition;
+        ++begun;
+        ++inflight;
+    }
 
     @Override
-    public String toString() {
-        return "{" +
-                "lastDefinition=" + lastDefinition +
-                ", begun=" + begun +
-                ", commits=" + commits +
-                ", rollbacks=" + rollbacks +
-                ", inflight=" + inflight +
-                ", tx=" + tx.hashCode() +
-                '}';
+    protected void doCommit(DefaultTransactionStatus status) {
+        ++commits;
+        --inflight;
     }
 
-
-
-    static class TX implements SavepointManager {
-	    private boolean hasTx;
-
-        public TX(boolean hasTx) {
-            this.hasTx = hasTx;
-        }
-
-        public boolean isHasTx() {
-            return hasTx;
-        }
-
-        public void setHasTx(boolean hasTx) {
-            this.hasTx = hasTx;
-        }
-
-        @Override
-        public Object createSavepoint() throws TransactionException {
-            System.out.println("createSavepoint");
-            return new Object();
-        }
-
-        @Override
-        public void rollbackToSavepoint(Object savepoint) throws TransactionException {
-            System.out.println("rollbackToSavepoint");
-        }
-
-        @Override
-        public void releaseSavepoint(Object savepoint) throws TransactionException {
-            System.out.println("releaseSavepoint");
-        }
+    @Override
+    protected void doRollback(DefaultTransactionStatus status) {
+        ++rollbacks;
+        --inflight;
     }
+
+    public void clear() {
+        begun = commits = rollbacks = inflight = 0;
+    }
+
 }
