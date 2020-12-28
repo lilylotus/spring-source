@@ -49,6 +49,8 @@ public class TransactionManagementConfigurationSelector extends AdviceModeImport
 		    // 默认为 JDK 接口的动态代理
 			case PROXY:
 			    // 自动注册代理的类
+                // AutoProxyRegistrar 注册 InfrastructureAdvisorAutoProxyCreator
+                // AopConfigUtils.registerAutoProxyCreatorIfNecessary(registry);
 				return new String[] {AutoProxyRegistrar.class.getName(),
 						ProxyTransactionManagementConfiguration.class.getName()};
 			case ASPECTJ:
@@ -60,6 +62,8 @@ public class TransactionManagementConfigurationSelector extends AdviceModeImport
 
 	private String determineTransactionAspectClass() {
 	    // 是否引入： javax.transaction-api 包
+        // AspectJJtaTransactionManagementConfiguration
+        // AspectJTransactionManagementConfiguration
 		return (ClassUtils.isPresent("javax.transaction.Transactional", getClass().getClassLoader()) ?
 				TransactionManagementConfigUtils.JTA_TRANSACTION_ASPECT_CONFIGURATION_CLASS_NAME :
 				TransactionManagementConfigUtils.TRANSACTION_ASPECT_CONFIGURATION_CLASS_NAME);

@@ -72,7 +72,7 @@ public class AutoProxyRegistrar implements ImportBeanDefinitionRegistrar {
 				candidateFound = true;
 				// JDK 接口的动态代理
 				if (mode == AdviceMode.PROXY) {
-				    // 注册需要的组件 (Auto-proxy creator)
+				    // 注册需要的组件 (Auto-proxy creator) InfrastructureAdvisorAutoProxyCreator.class
 					AopConfigUtils.registerAutoProxyCreatorIfNecessary(registry);
 					if ((Boolean) proxyTargetClass) {
 					    // proxyTargetClass -> true

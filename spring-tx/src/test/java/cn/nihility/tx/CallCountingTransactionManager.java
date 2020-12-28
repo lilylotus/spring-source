@@ -84,7 +84,9 @@ public class CallCountingTransactionManager extends AbstractPlatformTransactionM
 
     @Override
     protected boolean isExistingTransaction(Object transaction) throws TransactionException {
-        return ((TX) transaction).hasTx;
+        boolean exists = ((TX) transaction).hasTx;
+        System.out.println("isExistingTransaction transaction [" + transaction + "] tx [" + tx.hashCode() + "] exists [" + exists + "]");
+        return exists;
     }
 
     @Override
@@ -108,7 +110,7 @@ public class CallCountingTransactionManager extends AbstractPlatformTransactionM
                 ", inflight=" + inflight +
                 ", suspend=" + suspend +
                 ", resume=" + resume +
-                ", tx=" + tx +
+                ", tx=" + tx.hashCode() +
                 '}';
     }
 

@@ -11,7 +11,7 @@
 
 ### JDBC 事务属性
 
-<front color="red">请注意，除非开始实际的新事务，否则不会应用隔离级别和超时设置。</front>
+<font color="red">请注意，除非开始实际的新事务，否则不会应用隔离级别和超时设置。</font>
 
 #### 传播行为 [TransactionDefinition]
 
@@ -97,6 +97,7 @@ AbstractPlatformTransactionManager.startTransaction()
 * JdbcTransactionObjectSupport
     DataSourceTransactionObject
     
+
 重要的事务管理工具类
 * TransactionSynchronizationManager
     保存 DataSource:ConnectionHolder，每个执行线程中
@@ -109,6 +110,7 @@ AbstractPlatformTransactionManager.startTransaction()
     DataSourceUtils.doGetConnection(datasource);
     (ConnectionHolder) TransactionSynchronizationManager.getResource(dataSource); (事务)
     
+
 重要方法
 * TransactionSynchronizationManager.getResource(key) 
 
@@ -118,6 +120,7 @@ AbstractPlatformTransactionManager.startTransaction()
 
 * 默认注解 `mode` 为 `AdviceMode.PROXY` (JDK 动态代理方式实现)。
     会在 spring 容器中加载 `AutoProxyRegistrar` 和 `ProxyTransactionManagementConfiguration` 配置类
+    注册： InfrastructureAdvisorAutoProxyCreator.class
 * 注解 `mode` 为 `AdviceMode.ASPECTJ` (AspectJ weaving-based advice. 动态代理方式实现)。
     依据 `javax.transaction.Transactional` 该类是否存在，选择加载
     `TransactionManagementConfigUtils.JTA_TRANSACTION_ASPECT_CONFIGURATION_CLASS_NAME` 或
@@ -132,8 +135,10 @@ AbstractPlatformTransactionManager.startTransaction()
     `AnnotationTransactionAttributeSource` 和 `TransactionInterceptor`
 * `AnnotationTransactionAttributeSource`
     内部加载 `SpringTransactionAnnotationParser` 解析 `Transactional.class` 注解
+    -> 解析 `@Transactional` 注解属性为 `RuleBasedTransactionAttribute`
 * `TransactionInterceptor` 继承 `TransactionAspectSupport` (重)
     tx 事务方法的拦截器， `PlatformTransactionManager` 有关
+    `TransactionInterceptor#invoke()` 代理方法
     
 ### 事务调用逻辑
 
@@ -152,3 +157,45 @@ TransactionAspectSupport.completeTransactionAfterThrowing()
    -> AbstractPlatformTransactionManager.cleanupAfterCompletion()
    -> AbstractPlatformTransactionManager.resume() [恢复上个事务]
    -> AbstractPlatformTransactionManager.processRollback [处理事务回滚]
+
+### 事务的实现
+
+1. 继承 `AbstractPlatformTransactionManager` 平台事务管理抽象类
+    实现方法： `Object doGetTransaction() {}`
+    `void doBegin(Object transaction, TransactionDefinition definition) {}`
+    `void doCommit(DefaultTransactionStatus status) {}`
+    `void doRollback(DefaultTransactionStatus status) {}`
+
+2. 当 `@Transactional` 的 `propagation = Propagation.REQUIRES_NEW` 配置
+    参考：`org.springframework.jdbc.datasource.DataSourceTransactionManager`
+    实现方法： `Object doSuspend(Object transaction) {}`
+    `void doResume(Object transaction, Object suspendedResources) {}`
+    `boolean isExistingTransaction(Object transaction) {}`
+    
+3. 当 `@Transactional` 的 `propagation = Propagation.NESTED` 配置
+    获取事务对象要实现接口: `SavepointManager` 也可以继承 `JdbcTransactionObjectSupport` 抽象类支持
+    实现方法： `Object createSavepoint() {}`
+    `void rollbackToSavepoint(Object savepoint) {}`
+    `void releaseSavepoint(Object savepoint)`
+    参考 `org.springframework.jdbc.datasource.DataSourceTransactionManager.DataSourceTransactionObject`
+
+4. 事务状态对象应该实现的接口 `TransactionExecution` 和 `SavepointManager`
+    参考：`org.springframework.transaction.support.AbstractTransactionStatus`
+    --> `org.springframework.transaction.support.DefaultTransactionStatus`
+    
+* 具体的事务执行流程
+
+    1. `doGetTransaction()` -> `isExistingTransaction()`
+    2. `doBegin()`
+    3. `doCommit()`
+    
+### 事务提交/回滚处理
+
+#### 提交
+
+`AbstractPlatformTransactionManager.commit` [`public final void commit(TransactionStatus status)`]
+    -> `AbstractPlatformTransactionManager.processCommit`
+
+#### 回滚
+
+默认回滚的异常 `(RuntimeException | Error)`

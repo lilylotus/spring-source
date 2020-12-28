@@ -332,10 +332,12 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 
 	    // AnnotationTransactionAttributeSource
 		// If the transaction attribute is null, the method is non-transactional.
+        // 获取当前事务对应属性
 		TransactionAttributeSource tas = getTransactionAttributeSource();
 		final TransactionAttribute txAttr = (tas != null ? tas.getTransactionAttribute(method, targetClass) : null);
-		final TransactionManager tm = determineTransactionManager(txAttr);
+        final TransactionManager tm = determineTransactionManager(txAttr);
 
+        // 响应式/反应式事务
 		if (this.reactiveAdapterRegistry != null && tm instanceof ReactiveTransactionManager) {
 			ReactiveTransactionSupport txSupport = this.transactionSupportCache.computeIfAbsent(method, key -> {
 				if (KotlinDetector.isKotlinType(method.getDeclaringClass()) && KotlinDelegate.isSuspend(method)) {
@@ -357,6 +359,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 		PlatformTransactionManager ptm = asPlatformTransactionManager(tm);
 		final String joinpointIdentification = methodIdentification(method, targetClass, txAttr);
 
+		// 声明式事务处理 @Transactional
 		if (txAttr == null || !(ptm instanceof CallbackPreferringPlatformTransactionManager)) {
 		    // AbstractPlatformTransactionManager.getTransaction 获取事务
 			// Standard transaction demarcation with getTransaction and commit/rollback calls.
@@ -390,6 +393,7 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 			return retVal;
 		}
 
+        // 编程式事务处理
 		else {
 			Object result;
 			final ThrowableHolder throwableHolder = new ThrowableHolder();
@@ -650,8 +654,12 @@ public abstract class TransactionAspectSupport implements BeanFactoryAware, Init
 				logger.trace("Completing transaction for [" + txInfo.getJoinpointIdentification() +
 						"] after exception: " + ex);
 			}
+
+			// 支持默认回滚的异常
+            // DefaultTransactionAttribute.rollbackOn() -> (ex instanceof RuntimeException || ex instanceof Error)
 			if (txInfo.transactionAttribute != null && txInfo.transactionAttribute.rollbackOn(ex)) {
 				try {
+				    // org.springframework.transaction.support.AbstractPlatformTransactionManager.rollback(status)
 					txInfo.getTransactionManager().rollback(txInfo.getTransactionStatus());
 				}
 				catch (TransactionSystemException ex2) {

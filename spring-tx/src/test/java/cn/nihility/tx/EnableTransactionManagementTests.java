@@ -169,8 +169,8 @@ public class EnableTransactionManagementTests {
 
         System.out.println(txManager);
 
-        Assertions.assertEquals(2, txManager.begun);
-        Assertions.assertEquals(2, txManager.commits);
+        Assertions.assertEquals(1, txManager.begun);
+        Assertions.assertEquals(1, txManager.commits);
         Assertions.assertEquals(0, txManager.rollbacks);
         Assertions.assertEquals(0, txManager.inflight);
     }
@@ -188,9 +188,9 @@ public class EnableTransactionManagementTests {
 
         System.out.println(txManager);
 
-        Assertions.assertEquals(2, txManager.begun);
+        Assertions.assertEquals(1, txManager.begun);
         Assertions.assertEquals(0, txManager.commits);
-        Assertions.assertEquals(2, txManager.rollbacks);
+        Assertions.assertEquals(1, txManager.rollbacks);
         Assertions.assertEquals(0, txManager.inflight);
     }
 
@@ -203,9 +203,9 @@ public class EnableTransactionManagementTests {
 
         System.out.println(txManager);
 
-        Assertions.assertEquals(2, txManager.begun);
+        Assertions.assertEquals(1, txManager.begun);
         Assertions.assertEquals(1, txManager.commits);
-        Assertions.assertEquals(2, txManager.rollbacks);
+        Assertions.assertEquals(0, txManager.rollbacks);
         Assertions.assertEquals(0, txManager.inflight);
     }
 
