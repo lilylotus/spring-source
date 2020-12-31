@@ -79,13 +79,17 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 		String servletName = getServletName();
 		Assert.hasLength(servletName, "getServletName() must not return null or empty");
 
+		// 具体的实现类去生成各自的 WebApplicationContext
 		WebApplicationContext servletAppContext = createServletApplicationContext();
 		Assert.notNull(servletAppContext, "createServletApplicationContext() must not return null");
 
+		// 创建 DispatcherServlet -> FrameworkServlet
 		FrameworkServlet dispatcherServlet = createDispatcherServlet(servletAppContext);
 		Assert.notNull(dispatcherServlet, "createDispatcherServlet(WebApplicationContext) must not return null");
+		// set -> null
 		dispatcherServlet.setContextInitializers(getServletApplicationContextInitializers());
 
+		// 添加 servlet 到应用上下文
 		ServletRegistration.Dynamic registration = servletContext.addServlet(servletName, dispatcherServlet);
 		if (registration == null) {
 			throw new IllegalStateException("Failed to register servlet with name '" + servletName + "'. " +
@@ -93,16 +97,21 @@ public abstract class AbstractDispatcherServletInitializer extends AbstractConte
 		}
 
 		registration.setLoadOnStartup(1);
+		// 配置 DispatcherServlet 调度 Servlet 的拦截路径
 		registration.addMapping(getServletMappings());
+		// default -> true
 		registration.setAsyncSupported(isAsyncSupported());
 
+		// default -> null
 		Filter[] filters = getServletFilters();
 		if (!ObjectUtils.isEmpty(filters)) {
 			for (Filter filter : filters) {
+			    // 注册过滤器
 				registerServletFilter(servletContext, filter);
 			}
 		}
 
+		// 自定义注册的 Servlet
 		customizeRegistration(registration);
 	}
 
