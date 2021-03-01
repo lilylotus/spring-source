@@ -195,12 +195,14 @@ public abstract class BeanUtils {
 				for (int i = 0 ; i < args.length; i++) {
 					if (args[i] == null) {
 						Class<?> parameterType = parameterTypes[i];
+						// 默认值
 						argsWithDefaultValues[i] = (parameterType.isPrimitive() ? DEFAULT_TYPE_VALUES.get(parameterType) : null);
 					}
 					else {
 						argsWithDefaultValues[i] = args[i];
 					}
 				}
+				// new Object()
 				return ctor.newInstance(argsWithDefaultValues);
 			}
 		}

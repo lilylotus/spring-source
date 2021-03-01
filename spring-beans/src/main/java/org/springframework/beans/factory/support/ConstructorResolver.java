@@ -132,6 +132,7 @@ class ConstructorResolver {
 		ArgumentsHolder argsHolderToUse = null;
 		Object[] argsToUse = null;
 
+		// default -> null
 		if (explicitArgs != null) {
 			argsToUse = explicitArgs;
 		}
@@ -168,6 +169,7 @@ class ConstructorResolver {
 				}
 			}
 
+			// 仅一个构造函数且参数为0，表明是默认构造函数，直接实例化
 			if (candidates.length == 1 && explicitArgs == null && !mbd.hasConstructorArgumentValues()) {
 				Constructor<?> uniqueCandidate = candidates[0];
 				if (uniqueCandidate.getParameterCount() == 0) {
@@ -224,6 +226,7 @@ class ConstructorResolver {
 								paramNames = pnd.getParameterNames(candidate);
 							}
 						}
+						// 创建参数，去 spring ioc 容器中获取或创建
 						argsHolder = createArgumentArray(beanName, mbd, resolvedValues, bw, paramTypes, paramNames,
 								getUserDeclaredConstructor(candidate), autowiring, candidates.length == 1);
 					}
@@ -725,9 +728,11 @@ class ConstructorResolver {
 		TypeConverter converter = (customConverter != null ? customConverter : bw);
 
 		ArgumentsHolder args = new ArgumentsHolder(paramTypes.length);
+		// 按参数顺序保存构造函数参数对象
 		Set<ConstructorArgumentValues.ValueHolder> usedValueHolders = new HashSet<>(paramTypes.length);
 		Set<String> autowiredBeanNames = new LinkedHashSet<>(4);
 
+		// 遍历构造函数参数类型处理
 		for (int paramIndex = 0; paramIndex < paramTypes.length; paramIndex++) {
 			Class<?> paramType = paramTypes[paramIndex];
 			String paramName = (paramNames != null ? paramNames[paramIndex] : "");

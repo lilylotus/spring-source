@@ -243,10 +243,12 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 			String name, @Nullable Class<T> requiredType, @Nullable Object[] args, boolean typeCheckOnly)
 			throws BeansException {
 
+	    // 获取 bean 的真实名称
 		String beanName = transformedBeanName(name);
 		Object bean;
 
 		// Eagerly check singleton cache for manually registered singletons.
+        // 在 spring IOC 保存单例对象的 singletonObjects 中获取 bean， 三级缓存
 		Object sharedInstance = getSingleton(beanName);
 		if (sharedInstance != null && args == null) {
 			if (logger.isTraceEnabled()) {
@@ -264,11 +266,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 		else {
 			// Fail if we're already creating this bean instance:
 			// We're assumably within a circular reference.
+            // 是否为循环依赖
 			if (isPrototypeCurrentlyInCreation(beanName)) {
 				throw new BeanCurrentlyInCreationException(beanName);
 			}
 
 			// Check if bean definition exists in this factory.
+            // 检查是否该 bean 在上级 beanFactory 中已经实例化
 			BeanFactory parentBeanFactory = getParentBeanFactory();
 			if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
 				// Not found -> check parent.
@@ -294,11 +298,15 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				markBeanAsCreated(beanName);
 			}
 
+			// Bean 的创建逻辑
 			try {
+			    // 获取 bean 的定义元数据
 				RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
+				// 检查 RootBeanDefinition 是不是抽象的
 				checkMergedBeanDefinition(mbd, beanName, args);
 
 				// Guarantee initialization of beans that the current bean depends on.
+                // 获取初始化该 bean 依赖的对象
 				String[] dependsOn = mbd.getDependsOn();
 				if (dependsOn != null) {
 					for (String dep : dependsOn) {
@@ -318,6 +326,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 
 				// Create bean instance.
+                // 创建单例对象
 				if (mbd.isSingleton()) {
 					sharedInstance = getSingleton(beanName, () -> {
 						try {

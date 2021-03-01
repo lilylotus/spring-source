@@ -372,6 +372,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 						}
 						candidateConstructors = candidates.toArray(new Constructor<?>[0]);
 					}
+					// 仅有一个构造函数且参数大于一
 					else if (rawCandidates.length == 1 && rawCandidates[0].getParameterCount() > 0) {
 						candidateConstructors = new Constructor<?>[] {rawCandidates[0]};
 					}
@@ -520,6 +521,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	@Nullable
 	private MergedAnnotation<?> findAutowiredAnnotation(AccessibleObject ao) {
 		MergedAnnotations annotations = MergedAnnotations.from(ao);
+		// Autowired / Value / javax.inject.Inject
 		for (Class<? extends Annotation> type : this.autowiredAnnotationTypes) {
 			MergedAnnotation<?> annotation = annotations.get(type);
 			if (annotation.isPresent()) {
