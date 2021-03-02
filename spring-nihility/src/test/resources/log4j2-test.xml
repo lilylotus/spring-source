@@ -26,6 +26,7 @@
     <Loggers>
 
         <logger name="org.springframework.beans.factory.support" level="TRACE" />
+        <logger name="org.springframework.context.annotation" level="TRACE" />
 
         <Root level="DEBUG">
             <!--<appender-ref ref="Console"/>-->

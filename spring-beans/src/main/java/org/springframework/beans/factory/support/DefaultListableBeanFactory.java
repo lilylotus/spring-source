@@ -950,8 +950,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 		}
 
+		// 是否已经定义过了该 BeanName
 		BeanDefinition existingDefinition = this.beanDefinitionMap.get(beanName);
 		if (existingDefinition != null) {
+		    // 是否允许相同的 BeanName 重复定义，默认是不允许的
+            // allowBeanDefinitionOverriding
 			if (!isAllowBeanDefinitionOverriding()) {
 				throw new BeanDefinitionOverrideException(beanName, beanDefinition, existingDefinition);
 			}
@@ -977,9 +980,11 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 							"] with [" + beanDefinition + "]");
 				}
 			}
+			// 后者 Bean 定义会覆盖前缀的 Bean 定义
 			this.beanDefinitionMap.put(beanName, beanDefinition);
 		}
 		else {
+		    // 这个是加载如 @Configuration -> @Component 扫描到的类，正在创建中
 			if (hasBeanCreationStarted()) {
 				// Cannot modify startup-time collection elements anymore (for stable iteration)
 				synchronized (this.beanDefinitionMap) {
@@ -992,18 +997,21 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				}
 			}
 			else {
-				// Still in startup registration phase
-				this.beanDefinitionMap.put(beanName, beanDefinition);
-				this.beanDefinitionNames.add(beanName);
-				removeManualSingletonName(beanName);
-			}
+                // Still in startup registration phase
+                this.beanDefinitionMap.put(beanName, beanDefinition);
+                this.beanDefinitionNames.add(beanName);
+                removeManualSingletonName(beanName);
+            }
 			this.frozenBeanDefinitionNames = null;
 		}
 
 		if (existingDefinition != null || containsSingleton(beanName)) {
+		    // 重写设置覆盖 bean 的定义
 			resetBeanDefinition(beanName);
 		}
+		// 当前配置正在被冻结
 		else if (isConfigurationFrozen()) {
+		    // 清除类型缓存
 			clearByTypeCache();
 		}
 	}

@@ -84,6 +84,7 @@ abstract class ConfigurationClassUtils {
 	public static boolean checkConfigurationClassCandidate(
 			BeanDefinition beanDef, MetadataReaderFactory metadataReaderFactory) {
 
+	    // 类的全路径
 		String className = beanDef.getBeanClassName();
 		if (className == null || beanDef.getFactoryMethodName() != null) {
 			return false;
@@ -121,11 +122,16 @@ abstract class ConfigurationClassUtils {
 			}
 		}
 
+		// 获取 @Configuration 注解配置
+        // org.springframework.context.annotation.ConfigurationClassPostProcessor.configurationClass
 		Map<String, Object> config = metadata.getAnnotationAttributes(Configuration.class.getName());
+		// 默认 @Configuration 为 proxyBeanMethods -> true
 		if (config != null && !Boolean.FALSE.equals(config.get("proxyBeanMethods"))) {
+		    // full
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
 		else if (config != null || isConfigurationCandidate(metadata)) {
+		    // lite
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
 		}
 		else {
@@ -155,6 +161,10 @@ abstract class ConfigurationClassUtils {
 		}
 
 		// Any of the typical annotations found?
+        // org.springframework.context.annotation.Import
+        // org.springframework.stereotype.Component
+        // org.springframework.context.annotation.ImportResource
+        // org.springframework.context.annotation.ComponentScan
 		for (String indicator : candidateIndicators) {
 			if (metadata.isAnnotated(indicator)) {
 				return true;

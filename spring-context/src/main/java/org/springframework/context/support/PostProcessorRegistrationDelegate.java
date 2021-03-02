@@ -59,6 +59,7 @@ final class PostProcessorRegistrationDelegate {
 		// Invoke BeanDefinitionRegistryPostProcessors first, if any.
 		Set<String> processedBeans = new HashSet<>();
 
+		// 刚开始 beanFactoryPostProcessors 为空
 		if (beanFactory instanceof BeanDefinitionRegistry) {
 			BeanDefinitionRegistry registry = (BeanDefinitionRegistry) beanFactory;
 			List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
@@ -85,18 +86,26 @@ final class PostProcessorRegistrationDelegate {
 			// First, invoke the BeanDefinitionRegistryPostProcessors that implement PriorityOrdered.
 			String[] postProcessorNames =
 					beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
+			// org.springframework.context.annotation.internalConfigurationAnnotationProcessor
 			for (String ppName : postProcessorNames) {
 				if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
+				    // BeanDefinitionRegistryPostProcessor 实现了 ConfigurationClassPostProcessor 接口
 					currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
 					processedBeans.add(ppName);
 				}
 			}
+			// 后置处理器排序
 			sortPostProcessors(currentRegistryProcessors, beanFactory);
+			// 添加当前已经组测好的处理器
 			registryProcessors.addAll(currentRegistryProcessors);
+			// ConfigurationClassPostProcessor 后置加载 @Configuration 注解的 @ComponentScan 扫描
+            // 重点是: ConfigurationClassPostProcessor.postProcessBeanDefinitionRegistry
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
+			// 清除已经处理的当前处理器
 			currentRegistryProcessors.clear();
 
 			// Next, invoke the BeanDefinitionRegistryPostProcessors that implement Ordered.
+            // org.springframework.context.annotation.internalConfigurationAnnotationProcessor
 			postProcessorNames = beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
 			for (String ppName : postProcessorNames) {
 				if (!processedBeans.contains(ppName) && beanFactory.isTypeMatch(ppName, Ordered.class)) {
@@ -277,6 +286,7 @@ final class PostProcessorRegistrationDelegate {
 			Collection<? extends BeanDefinitionRegistryPostProcessor> postProcessors, BeanDefinitionRegistry registry) {
 
 		for (BeanDefinitionRegistryPostProcessor postProcessor : postProcessors) {
+		    // 重点是: ConfigurationClassPostProcessor.postProcessBeanDefinitionRegistry
 			postProcessor.postProcessBeanDefinitionRegistry(registry);
 		}
 	}

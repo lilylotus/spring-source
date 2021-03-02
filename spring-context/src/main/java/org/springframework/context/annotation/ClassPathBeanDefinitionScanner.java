@@ -273,22 +273,39 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
 		for (String basePackage : basePackages) {
+		    // 扫描指定包下面 @Component 注解类
+            // ScannedGenericBeanDefinition （AnnotatedBeanDefinition, AbstractBeanDefinition)
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
 			for (BeanDefinition candidate : candidates) {
+			    // 加载类的范围解析，如：配置中心使用的 @RefreshScope, 解析 @Scope 注解
+                // AnnotationScopeMetadataResolver
+                // 重要的是 proxyMode -> 决定是否使用代理
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
+				// 默认 singleton
 				candidate.setScope(scopeMetadata.getScopeName());
+				// new AnnotationBeanNameGenerator(); Bean 的名称解析
+                // Introspector.decapitalize(name) -> (FooBah -> fooBah and X -> x but URL -> URL)
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
 				if (candidate instanceof AbstractBeanDefinition) {
+				    // 配置自动注入和默认 BeanDefinitionDefaults
 					postProcessBeanDefinition((AbstractBeanDefinition) candidate, beanName);
 				}
+				// 若为注解方式的 bean
 				if (candidate instanceof AnnotatedBeanDefinition) {
+				    // 设置默认的实例化需要的属性，如： lazyInit (false) : Lazy.class（懒加载）
+                    // primary (false) : Primary 属性
+                    // DependsOn (null) | Role (BeanDefinition.ROLE_APPLICATION) | Description.class
 					AnnotationConfigUtils.processCommonDefinitionAnnotations((AnnotatedBeanDefinition) candidate);
 				}
+				// 检查注解 bean 的名称是否合法/有重复，不包含进入选择
 				if (checkCandidate(beanName, candidate)) {
 					BeanDefinitionHolder definitionHolder = new BeanDefinitionHolder(candidate, beanName);
+					// 是否使用代理，默认 NO
 					definitionHolder =
-							AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
+                            AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 					beanDefinitions.add(definitionHolder);
+					// 注册正在创建的 Bean 到， DefaultListableBeanFactory.beanDefinitionNames
+                    // beanDefinitionMap
 					registerBeanDefinition(definitionHolder, this.registry);
 				}
 			}
@@ -303,8 +320,10 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 * @param beanName the generated bean name for the given bean
 	 */
 	protected void postProcessBeanDefinition(AbstractBeanDefinition beanDefinition, String beanName) {
+	    // new BeanDefinitionDefaults()
 		beanDefinition.applyDefaults(this.beanDefinitionDefaults);
 		if (this.autowireCandidatePatterns != null) {
+		    // 设置自动注入是否，默认为 true
 			beanDefinition.setAutowireCandidate(PatternMatchUtils.simpleMatch(this.autowireCandidatePatterns, beanName));
 		}
 	}

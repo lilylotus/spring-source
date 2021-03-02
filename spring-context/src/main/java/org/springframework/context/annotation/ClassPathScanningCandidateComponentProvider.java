@@ -308,10 +308,12 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 * @return a corresponding Set of autodetected bean definitions
 	 */
 	public Set<BeanDefinition> findCandidateComponents(String basePackage) {
+	    // default = null
 		if (this.componentsIndex != null && indexSupportsIncludeFilters()) {
 			return addCandidateComponentsFromIndex(this.componentsIndex, basePackage);
 		}
 		else {
+		    // 直接扫描指定基础包路径下的所有服务要求的 class
 			return scanCandidateComponents(basePackage);
 		}
 	}
@@ -415,8 +417,11 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	private Set<BeanDefinition> scanCandidateComponents(String basePackage) {
 		Set<BeanDefinition> candidates = new LinkedHashSet<>();
 		try {
+		    // classpath*:basePackagePath/**/*.class
 			String packageSearchPath = ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX +
 					resolveBasePackage(basePackage) + '/' + this.resourcePattern;
+			// default -> new PathMatchingResourcePatternResolver();
+            // FileSystemResource
 			Resource[] resources = getResourcePatternResolver().getResources(packageSearchPath);
 			boolean traceEnabled = logger.isTraceEnabled();
 			boolean debugEnabled = logger.isDebugEnabled();
@@ -426,10 +431,19 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				}
 				if (resource.isReadable()) {
 					try {
+					    // new CachingMetadataReaderFactory(); -> new SimpleMetadataReader() ->
+                        // SimpleAnnotationMetadataReadingVisitor + new ClassReader
+                        // beanClass ->
 						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
+						// 筛选指定类，默认是 @Component 注解
 						if (isCandidateComponent(metadataReader)) {
+						    // Bean 的元数据定义，用于在后面解析和实例化对象
+                            // className ClassUtils.convertResourcePathToClassName(name); 类的全路径
 							ScannedGenericBeanDefinition sbd = new ScannedGenericBeanDefinition(metadataReader);
 							sbd.setSource(resource);
+							// 是否为候选的元数据加载类， SimpleAnnotationMetadata
+                            // 决定是否为最顶层类或者是内部 static 类
+                            // 是否为一个抽象类，若是抽象类是否有注解 Lookup
 							if (isCandidateComponent(sbd)) {
 								if (debugEnabled) {
 									logger.debug("Identified candidate component class: " + resource);
@@ -491,8 +505,10 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				return false;
 			}
 		}
+		// default -> new AnnotationTypeFilter(Component.class)
 		for (TypeFilter tf : this.includeFilters) {
 			if (tf.match(metadataReader, getMetadataReaderFactory())) {
+			    // 解析 @Conditional 注解
 				return isConditionMatch(metadataReader);
 			}
 		}
@@ -523,6 +539,8 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 	 */
 	protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
 		AnnotationMetadata metadata = beanDefinition.getMetadata();
+		// 决定是否为最顶层类或者是内部 static 类
+        // 是否为一个抽象类，若是抽象类是否有注解 Lookup
 		return (metadata.isIndependent() && (metadata.isConcrete() ||
 				(metadata.isAbstract() && metadata.hasAnnotatedMethods(Lookup.class.getName()))));
 	}
