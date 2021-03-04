@@ -2,6 +2,8 @@ package cn.nihility.context.test;
 
 import cn.nihility.context.bean.BeanA;
 import cn.nihility.context.bean.BeanB;
+import cn.nihility.context.bean.CircleAB;
+import cn.nihility.context.bean.CircleBA;
 import cn.nihility.context.config.BeanConfiguration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -37,6 +39,12 @@ public class CoreTest {
 
         Assertions.assertNotNull(a);
         Assertions.assertNotNull(b);
+
+        CircleAB circleAb = ctx.getBean("circleAB", CircleAB.class);
+        CircleBA circleBA = ctx.getBean(CircleBA.class);
+
+        System.out.println(circleAb);
+        System.out.println(circleBA);
     }
 
 }

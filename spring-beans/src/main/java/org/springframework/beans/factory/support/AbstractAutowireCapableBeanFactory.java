@@ -569,6 +569,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
+				    // AutowiredAnnotationBeanPostProcessor.postProcessMergedBeanDefinition
+				    // 解析 @Autowired @Value 注解配置
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -599,6 +601,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		    // 填充 new Object() 对象中的属性
 			populateBean(beanName, mbd, instanceWrapper);
 			// BeanPostProcessor.postProcessAfterInitialization
+            // 调用初始化方法 invokeAwareMethods - applyBeanPostProcessorsBeforeInitialization
+            // invokeInitMethods - applyBeanPostProcessorsAfterInitialization
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -1098,6 +1102,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		for (BeanPostProcessor bp : getBeanPostProcessors()) {
 			if (bp instanceof MergedBeanDefinitionPostProcessor) {
 				MergedBeanDefinitionPostProcessor bdp = (MergedBeanDefinitionPostProcessor) bp;
+				// AutowiredAnnotationBeanPostProcessor.postProcessMergedBeanDefinition()
 				bdp.postProcessMergedBeanDefinition(mbd, beanType, beanName);
 			}
 		}

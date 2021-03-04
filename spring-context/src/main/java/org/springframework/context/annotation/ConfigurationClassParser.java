@@ -306,6 +306,7 @@ class ConfigurationClassParser {
 				// The config class is annotated with @ComponentScan -> perform the scan immediately
                 // 执行 @ComponentScan 指定包中所有类元数据配置 -> 生成 Bean 的候选
                 // -> ComponentScanAnnotationParser.parse -> ClassPathBeanDefinitionScanner scanner.doScan
+                // -> 生成 ScannedGenericBeanDefinition bean 的定义
 				Set<BeanDefinitionHolder> scannedBeanDefinitions =
 						this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
 				// Check the set of scanned definitions for any further config classes and parse recursively if needed
@@ -396,7 +397,7 @@ class ConfigurationClassParser {
 				else {
 					this.importStack.push(configClass);
 					try {
-					    // 优先解析内部配置类
+					    // 优先解析内部配置类，这里添加了个 importedBy
 						processConfigurationClass(candidate.asConfigClass(configClass), filter);
 					}
 					finally {
