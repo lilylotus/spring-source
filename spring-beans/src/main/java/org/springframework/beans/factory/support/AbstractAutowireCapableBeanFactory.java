@@ -426,6 +426,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			throws BeansException {
 
 		Object result = existingBean;
+		// 获取所有的后置处理器
 		for (BeanPostProcessor processor : getBeanPostProcessors()) {
 			Object current = processor.postProcessAfterInitialization(result, beanName);
 			if (current == null) {
@@ -586,14 +587,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
 				isSingletonCurrentlyInCreation(beanName));
 		if (earlySingletonExposure) {
-			if (logger.isTraceEnabled()) {
-				logger.trace("Eagerly caching bean '" + beanName +
-						"' to allow for resolving potential circular references");
-			}
-			// 添加到 singletonFactories 单例工厂中，第三级缓存
+            if (logger.isTraceEnabled()) {
+                logger.trace("Eagerly caching bean '" + beanName +
+                        "' to allow for resolving potential circular references");
+            }
+            // 添加到 singletonFactories 单例工厂中，第三级缓存
             // registeredSingletons
-			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
-		}
+            addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
+        }
 
 		// Initialize the bean instance.
 		Object exposedObject = bean;
@@ -602,7 +603,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			populateBean(beanName, mbd, instanceWrapper);
 			// BeanPostProcessor.postProcessAfterInitialization
             // 调用初始化方法 invokeAwareMethods - applyBeanPostProcessorsBeforeInitialization
-            // invokeInitMethods - applyBeanPostProcessorsAfterInitialization
+            // invokeInitMethods - applyBeanPostProcessorsAfterInitialization (做了 AOP 的增强)
+            //     -> AbstractAutoProxyCreator#postProcessAfterInitialization()
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -1830,6 +1832,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					beanName, "Invocation of init method failed", ex);
 		}
 		if (mbd == null || !mbd.isSynthetic()) {
+		    // Bean 后置处理，AOP 切面处理
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
 		}
 

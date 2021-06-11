@@ -30,7 +30,7 @@ public class CoreTest {
     }
 
     @Test
-    public void testObtainBean() {
+    void testObtainBean() {
         BeanA a = ctx.getBean(BeanA.class);
         BeanB b = ctx.getBean(BeanB.class);
 

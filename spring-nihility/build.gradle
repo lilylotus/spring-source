@@ -22,7 +22,8 @@ dependencies {
     compile(project(":spring-tx"))
     compile(project(":spring-jdbc"))
     compile(project(":spring-aop"))
-    /*optional(project(":kotlin-coroutines"))*/
+
+    compile("org.aspectj:aspectjweaver")
 
     implementation('org.apache.logging.log4j:log4j-core')
     implementation('org.apache.logging.log4j:log4j-slf4j-impl')
