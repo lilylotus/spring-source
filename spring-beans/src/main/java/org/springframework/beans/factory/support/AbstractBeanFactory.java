@@ -342,7 +342,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 					});
 					bean = getObjectForBeanInstance(sharedInstance, name, beanName, mbd);
 				}
-
+                // 原型类型 bean 实例
 				else if (mbd.isPrototype()) {
 					// It's a prototype -> create a new instance.
 					Object prototypeInstance = null;
@@ -357,7 +357,14 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				}
 
 				else {
+				    /* 自定义 Scope bean 实列初始化
+                       自定义 Scope 类，实现 org.springframework.beans.factory.config.Scope 接口
+                       在用 CustomScopeConfigurer 注册自定 Scope 实现类
+                       具体使用 @Scope("自定义 scope 的名称") 放到 @Bean 注解同级 */
 					String scopeName = mbd.getScope();
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("从 scope [" + scopeName + "] 获取 bean [" + beanName + "]");
+                    }
 					if (!StringUtils.hasLength(scopeName)) {
 						throw new IllegalStateException("No scope name defined for bean ´" + beanName + "'");
 					}
