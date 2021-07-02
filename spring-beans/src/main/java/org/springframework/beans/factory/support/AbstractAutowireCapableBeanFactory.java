@@ -644,8 +644,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 		}
 
-		// Register bean as disposable.
+		// Register bean as disposable. (一次性的)
 		try {
+		    // 配置 Bean 实例销毁时调用的销毁回调方法
 			registerDisposableBeanIfNecessary(beanName, bean, mbd);
 		}
 		catch (BeanDefinitionValidationException ex) {
@@ -1815,15 +1816,18 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}, getAccessControlContext());
 		}
 		else {
+		    // 往 Bean 注入各种 Aware 信息 [BeanNameAware, BeanClassLoader, AwareBeanClassLoaderAware]
 			invokeAwareMethods(beanName, bean);
 		}
 
 		Object wrappedBean = bean;
+		// Synthetic - 合成的
 		if (mbd == null || !mbd.isSynthetic()) {
 			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
 		}
 
 		try {
+		    // 调用 bean 的初始化方法，实现了 InitializingBean 接口或包含 afterPropertiesSet 方法。
 			invokeInitMethods(beanName, wrappedBean, mbd);
 		}
 		catch (Throwable ex) {

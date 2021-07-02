@@ -1867,6 +1867,11 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 * @see org.springframework.beans.factory.config.DestructionAwareBeanPostProcessor
 	 */
 	protected boolean requiresDestruction(Object bean, RootBeanDefinition mbd) {
+	    /* 是否有 析构 函数存在
+	    * 1. 实现了 DisposableBean/AutoCloseable 接口
+	    * 2. 有 close/shutdown 方法
+	    * 3. 是否有 DestructionAwareBeanPostProcessor 处理器并且这个 bean 应用了该处理器
+	    * */
 		return (bean.getClass() != NullBean.class &&
 				(DisposableBeanAdapter.hasDestroyMethod(bean, mbd) || (hasDestructionAwareBeanPostProcessors() &&
 						DisposableBeanAdapter.hasApplicableProcessors(bean, getBeanPostProcessors()))));
@@ -1886,11 +1891,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 	 */
 	protected void registerDisposableBeanIfNecessary(String beanName, Object bean, RootBeanDefinition mbd) {
 		AccessControlContext acc = (System.getSecurityManager() != null ? getAccessControlContext() : null);
+		// 校验 bean 是否存在析构函数
 		if (!mbd.isPrototype() && requiresDestruction(bean, mbd)) {
 			if (mbd.isSingleton()) {
 				// Register a DisposableBean implementation that performs all destruction
 				// work for the given bean: DestructionAwareBeanPostProcessors,
 				// DisposableBean interface, custom destroy method.
+                // DisposableBeanAdapter 调用在该 bean 销毁时调用的回调方法
 				registerDisposableBean(beanName,
 						new DisposableBeanAdapter(bean, beanName, mbd, getBeanPostProcessors(), acc));
 			}
@@ -1900,6 +1907,10 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 				if (scope == null) {
 					throw new IllegalStateException("No Scope registered for scope name '" + mbd.getScope() + "'");
 				}
+				/* 配置 bean 销毁时的执行方法，如:
+				* org.springframework.cloud.context.scope.GenericScope#registerDestructionCallback
+				* -> org.springframework.cloud.context.scope.GenericScope.BeanLifecycleWrapper#destroy 调用销毁回调方法
+				* */
 				scope.registerDestructionCallback(beanName,
 						new DisposableBeanAdapter(bean, beanName, mbd, getBeanPostProcessors(), acc));
 			}
