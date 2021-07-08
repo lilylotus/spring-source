@@ -198,7 +198,9 @@ class ConfigurationClassBeanDefinitionReader {
 		Assert.state(bean != null, "No @Bean annotation attributes");
 
 		// Consider name and any aliases
+        // 获取 @Bean 注解的 Bean 名称
 		List<String> names = new ArrayList<>(Arrays.asList(bean.getStringArray("name")));
+		// 当 @Bean 注解没有配置 Bean 的 name （名称）属性时，使用方法名称作为 Bean 的名称
 		String beanName = (!names.isEmpty() ? names.remove(0) : methodName);
 
 		// Register aliases even when overridden
