@@ -7,9 +7,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class BeanScannerStarterConfigurerTest {
+class ClassPathBeanScannerTest {
 
     @Test
     void testScanner() {
@@ -27,9 +28,20 @@ class BeanScannerStarterConfigurerTest {
         assertNotNull(b2);
         b2.say();
 
+//        final ScannerBeanClass sbc1 = ctx.getBean("scannerBeanClass", ScannerBeanClass.class);
+//        final ScannerBeanClass sbc1 = (ScannerBeanClass) ctx.getBean("scannerBeanClass");
+//        assertNull(sbc1);
+
+//        final ScannerBeanClass sbc2 = ctx.getBean(ScannerBeanClass.class.getName(), ScannerBeanClass.class);
+//        assertNotNull(sbc2);
+
         b2 = (ScannerBeanClass2) ctx.getBean("scannerBeanClass2");
         assertNotNull(b2);
         b2.say();
+
+        final ScannerBeanInterface sbi1 = ctx.getBean("scannerBeanClass3", ScannerBeanInterface.class);
+        assertNotNull(sbi1);
+        sbi1.say();
     }
 
 }

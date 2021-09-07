@@ -62,6 +62,7 @@ public class ClassPathBeanScanner extends ClassPathBeanDefinitionScanner {
             LOGGER.debug("Creating ScannerFactoryBean with name [{}] and [{}] mapperInterface",
                     holder.getBeanName(), beanClassName);
 
+            // 这里偷梁换柱，使用 ScannerFactoryBean 来代理创建该类对象
             definition.getConstructorArgumentValues().addGenericArgumentValue(beanClassName);
             definition.setBeanClass(this.scannerFactoryBeanClass);
             definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
